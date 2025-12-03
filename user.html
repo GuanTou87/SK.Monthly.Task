@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <title>成員 - SK團</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-slate-50 text-slate-800">
+  <!-- 頂部 Bar -->
+  <header class="bg-white sticky top-0 z-20 shadow-sm px-4 py-3 flex justify-between items-center border-b border-gray-100">
+    <div class="flex items-center gap-2">
+      <div class="font-black text-lg text-indigo-600">SK團</div>
+      <span id="user-role-badge" class="bg-slate-800 text-white text-[10px] px-2 py-0.5 rounded font-bold"></span>
+    </div>
+    <div class="flex items-center gap-2">
+      <div id="user-points" class="text-sm font-bold bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full"></div>
+      <button id="refresh-btn" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
+        🔄
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto p-4 space-y-6 pb-24">
+    <!-- 任務列表 -->
+    <section id="tab-tasks" class="space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-slate-700 text-lg">任務列表</h2>
+      </div>
+      <div id="tasks-wrapper" class="space-y-3"></div>
+      <div id="tasks-empty" class="text-center text-gray-400 py-8 hidden">目前沒有任務</div>
+    </section>
+
+    <!-- 排行榜 -->
+    <section id="tab-leaderboard" class="space-y-4 hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="bg-slate-50 p-3 text-xs font-bold text-gray-400 border-b border-gray-100 flex justify-between px-4">
+          <span>排名 / 名稱</span>
+          <span>POINTS</span>
+        </div>
+        <div id="leaderboard-body"></div>
+      </div>
+    </section>
+
+    <!-- 個人頁面 -->
+    <section id="tab-profile" class="space-y-6 hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <h2 class="font-black text-xl text-slate-800 mb-1">個人資訊</h2>
+        <div class="text-xs text-gray-400 mb-4" id="profile-role"></div>
+
+        <div class="space-y-2 text-sm mb-4">
+          <div><span class="text-gray-500">名稱：</span><span id="profile-uid" class="font-mono font-bold text-slate-800"></span></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4 mb-4">
+          <div>
+            <div id="profile-points" class="text-2xl font-black text-indigo-600">0</div>
+            <div class="text-[10px] text-gray-400 uppercase font-bold">總積分</div>
+          </div>
+          <div>
+            <div id="profile-done-count" className="text-2xl font-black text-slate-700">0</div>
+            <div class="text-[10px] text-gray-400 uppercase font-bold">完成任務</div>
+          </div>
+        </div>
+
+        <div class="text-left bg-gray-50 p-3 rounded-xl mb-4">
+          <h3 class="text-xs font-bold text-gray-500 mb-2 uppercase">每月積分統計</h3>
+          <div id="profile-monthly-stats" class="space-y-1 text-sm"></div>
+        </div>
+
+        <button id="logout-btn" class="w-full text-sm text-red-500 font-bold bg-white border border-red-100 py-2 rounded-xl hover:bg-red-50 flex items-center justify-center gap-2">
+          登出
+        </button>
+      </div>
+
+      <!-- 提交紀錄 -->
+      <div id="history-wrapper" class="space-y-4"></div>
+    </section>
+  </main>
+
+  <!-- 提交任務 Modal -->
+  <div id="submit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="text-center mb-4">
+        <div id="submit-modal-year-month" class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-full mb-2 inline-block"></div>
+        <div id="submit-modal-icon" class="text-4xl mb-2"></div>
+        <h3 id="submit-modal-title" class="font-bold text-xl text-slate-800"></h3>
+        <div id="submit-modal-desc" class="text-xs text-gray-500 mt-1 px-2"></div>
+        <div id="submit-modal-points" class="text-3xl font-black text-indigo-600 mt-2"></div>
+        <div id="submit-modal-deadline" class="text-[11px] text-red-500 mt-1"></div>
+      </div>
+      <div class="space-y-4 flex-1 overflow-y-auto px-1">
+        <div id="submit-image-area" class="w-full min-h-[120px] rounded-xl border-2 border-dashed border-indigo-300 bg-indigo-50 flex flex-wrap gap-2 p-2 cursor-pointer hover:bg-indigo-100 transition items-center justify-center relative">
+          <div id="submit-image-empty" class="text-indigo-400 flex flex-col items-center">
+            <span class="text-2xl mb-1">📷</span>
+            <span class="text-xs font-bold">點擊上傳照片 (可多選)</span>
+          </div>
+          <div id="submit-image-preview" class="flex flex-wrap gap-2"></div>
+          <input id="submit-image-input" type="file" class="hidden" accept="image/*" multiple />
+        </div>
+        <input id="submit-user-date" type="date" class="w-full p-2 border border-gray-200 rounded-xl bg-gray-50" />
+        <textarea id="submit-proof" placeholder="備註..." class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 h-20 resize-none outline-none focus:border-indigo-500"></textarea>
+      </div>
+      <div class="flex gap-2 mt-4 pt-2 border-t border-gray-100">
+        <button id="submit-cancel" class="flex-1 py-3 bg-gray-100 rounded-xl font-bold text-gray-600">取消</button>
+        <button id="submit-confirm" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 flex items-center justify-center gap-2">提交</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 大圖預覽 Modal -->
+  <div id="image-viewer" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/90 p-4">
+    <img id="image-viewer-img" src="" class="max-w-full max-h-full rounded-lg shadow-2xl" alt="Full size" />
+    <button id="image-viewer-close" class="absolute top-4 right-4 text-white p-2 bg-white/20 rounded-full hover:bg-white/40">
+      ✕
+    </button>
+  </div>
+
+  <!-- 底部導航 -->
+  <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 py-2 flex justify-around text-xs font-bold text-gray-400 safe-area-bottom z-30">
+    <button data-tab="tasks" class="nav-btn flex flex-col items-center gap-1 p-2 text-indigo-600">
+      <span class="text-lg">🗺</span>
+      任務
+    </button>
+    <button data-tab="leaderboard" class="nav-btn flex flex-col items-center gap-1 p-2">
+      <span class="text-lg">🏆</span>
+      排行
+    </button>
+    <button data-tab="profile" class="nav-btn flex flex-col items-center gap-1 p-2">
+      <span class="text-lg">👤</span>
+      個人
+    </button>
+  </nav>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/user.js"></script>
+</body>
+</html>

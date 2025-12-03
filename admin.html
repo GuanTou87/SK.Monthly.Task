@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <title>管理員 - SK團</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-slate-50 text-slate-800">
+  <header class="bg-white sticky top-0 z-20 shadow-sm px-4 py-3 flex justify-between items-center border-b border-gray-100">
+    <div class="flex items-center gap-2">
+      <div class="font-black text-lg text-indigo-600">SK團</div>
+      <span class="bg-slate-800 text-white text-[10px] px-2 py-0.5 rounded font-bold">管理員</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="admin-refresh" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200">🔄</button>
+      <button id="admin-logout" class="text-xs text-red-500 font-bold bg-white border border-red-100 px-3 py-1.5 rounded-xl hover:bg-red-50">
+        登出
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto p-4 space-y-6 pb-8">
+
+    <!-- 任務管理 -->
+    <section class="space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-slate-700 text-lg">任務管理</h3>
+        <button id="task-add-btn" class="flex items-center gap-1 text-xs font-bold bg-slate-800 text-white px-3 py-1.5 rounded-lg">
+          ➕ 新增
+        </button>
+      </div>
+      <div id="tasks-admin-wrapper" class="space-y-2"></div>
+      <div id="tasks-admin-empty" class="text-center text-gray-400 py-4 hidden">尚無任務</div>
+    </section>
+    <!-- 待審核 -->
+    <section class="bg-slate-800 text-white p-5 rounded-2xl shadow-lg">
+      <h3 class="font-bold flex items-center gap-2 mb-4 text-lg">
+        🛡 審核控制台
+      </h3>
+      <div id="pending-wrapper" class="space-y-3"></div>
+      <div id="pending-empty" class="text-slate-500 text-center text-sm py-8 border border-dashed border-slate-600 rounded-xl hidden">
+        無待審核任務
+      </div>
+    </section>
+    <!-- 排行榜 -->
+    <section class="bg-white p-5 rounded-2xl shadow-lg">
+        <h3 class="font-bold text-slate-700 text-lg mb-4">排行榜</h3>
+        <div id="leaderboard-body" class="space-y-2"></div>
+        <div id="leaderboard-empty" class="text-gray-400 text-center py-4 hidden">尚無成員資料</div>
+    </section>
+
+    
+  </main>
+
+  <!-- 新增任務 Modal -->
+  <div id="task-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl">
+      <h3 class="font-bold text-lg mb-4 text-slate-800">新增任務</h3>
+      <div class="space-y-3">
+        <input id="task-title" class="w-full p-2 border rounded-lg" placeholder="標題" />
+        <div>
+          <label class="text-xs font-bold text-gray-500">任務類型</label>
+          <select id="task-type" class="w-full p-2 border rounded-lg">
+            <option value="fixed">固定分數</option>
+            <option value="variable">管理員打分</option>
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <div class="flex-1">
+            <label class="text-xs font-bold text-gray-500">年份</label>
+            <input id="task-year" type="number" class="w-full p-2 border rounded-lg" />
+          </div>
+          <div class="flex-1">
+            <label class="text-xs font-bold text-gray-500">月份</label>
+            <input id="task-month" type="number" class="w-full p-2 border rounded-lg" min="1" max="12" />
+          </div>
+        </div>
+        <div id="task-points-wrapper">
+          <label class="text-xs font-bold text-gray-500">分數（固定分數任務才會用到）</label>
+          <input id="task-points" type="number" class="w-full p-2 border rounded-lg" placeholder="10" />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500">Icon</label>
+          <input id="task-icon" class="w-full p-2 border rounded-lg text-center" placeholder="Emoji，例如 🐾" />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500">任務描述</label>
+          <textarea id="task-description" class="w-full p-2 border rounded-lg bg-gray-50 h-20 resize-none outline-none focus:border-indigo-500" placeholder="任務描述，可填可不填"></textarea>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500">截止日期</label>
+          <input id="task-deadline" type="date" class="w-full p-2 border rounded-lg" />
+        </div>
+      </div>
+      <div class="flex gap-2 mt-6">
+        <button id="task-cancel" class="flex-1 py-2 bg-gray-100 rounded-lg font-bold text-gray-600">取消</button>
+        <button id="task-save" class="flex-1 py-2 bg-slate-800 text-white rounded-lg font-bold">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 大圖預覽 Modal -->
+  <div id="admin-image-viewer" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/90 p-4">
+    <img id="admin-image-viewer-img" src="" class="max-w-full max-h-full rounded-lg shadow-2xl" alt="Full size" />
+    <button id="admin-image-viewer-close" class="absolute top-4 right-4 text-white p-2 bg-white/20 rounded-full hover:bg-white/40">
+      ✕
+    </button>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
